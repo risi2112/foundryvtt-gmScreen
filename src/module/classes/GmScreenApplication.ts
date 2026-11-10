@@ -1090,7 +1090,10 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
       return;
     }
 
-    if (Object.keys(diffData).length) {
+    // diffObject only reports added or changed keys, so check for deleted tabs (or a new order) separately
+    const tabsAddedRemovedOrMoved = Object.keys(oldData.grids).join('|') !== Object.keys(newData.grids).join('|');
+
+    if (Object.keys(diffData).length && !tabsAddedRemovedOrMoved) {
       if (
         Object.keys(diffData).every((key) => key === 'activeGridId') ||
         Object.values(diffData.grids || {}).every((grid) => Object.keys(grid).every((key) => key === 'cssClass'))

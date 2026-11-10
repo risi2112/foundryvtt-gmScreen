@@ -1347,6 +1347,25 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
         });
         break;
 
+      // a single text page: show its journal locked to that page, so it looks and behaves like a journal cell
+      case relevantDocument instanceof JournalEntryPage &&
+        relevantDocument.type === 'text' &&
+        relevantDocument.parent instanceof JournalEntry:
+        log(false, `creating compact journal locked to page "${relevantDocument.name}"`, { cellId });
+
+        this.apps[cellId] = new CompactJournalEntryDisplay({
+          document: relevantDocument.parent,
+          editable: false,
+          cellId,
+          lockedPageId: relevantDocument.id,
+          id: `gmscreen-journal-${relevantDocument.parent.id}-page-${relevantDocument.id}`,
+          window: {
+            positioned: false,
+            resizable: false,
+          },
+        });
+        break;
+
       // special case when the sheet is a journal text page. We need to use the SheetClass to resolve UUID links
       case sheet instanceof foundry.applications.sheets.journal.JournalEntryPageProseMirrorSheet &&
         relevantDocument instanceof JournalEntryPage &&
@@ -1660,6 +1679,11 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
             const gridCellContent = gridEntry.querySelector('.gm-screen-grid-cell-content');
             if (application.options.classes.length > 0) {
               gridCellContent?.classList.add(...application.options.classes);
+            }
+
+            if (application instanceof CompactJournalEntryDisplay && application.lockedPageId) {
+              application.renderLockedPage();
+              return;
             }
 
             if (application instanceof CompactJournalEntryDisplay) {

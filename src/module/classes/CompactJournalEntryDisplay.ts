@@ -33,9 +33,27 @@ export class CompactJournalEntryDisplay extends foundry.applications.sheets.jour
     return true;
   }
 
+  /** Set when a single page was dropped on the cell: the journal is shown locked to that page */
+  lockedPageId?: string;
+
   constructor(options) {
     super(options);
     this.cellId = options.cellId;
+    this.lockedPageId = options.lockedPageId;
+  }
+
+  get lockedPage() {
+    return this.lockedPageId ? this.document.pages.get(this.lockedPageId) : undefined;
+  }
+
+  /** Shows only the dropped page, in single page view */
+  renderLockedPage() {
+    const renderOptions = {
+      force: true,
+      mode: foundry.applications.sheets.journal.JournalEntrySheet.VIEW_MODES.SINGLE,
+      pageId: this.lockedPageId,
+    };
+    this.render(renderOptions);
   }
 
   // eslint-disable-next-line @typescript-eslint/class-literal-property-style
@@ -55,7 +73,7 @@ export class CompactJournalEntryDisplay extends foundry.applications.sheets.jour
     }
     const titleElement = cell.querySelector('.gm-screen-grid-cell-title');
     if (titleElement) {
-      titleElement.textContent = this.title;
+      titleElement.textContent = this.lockedPage?.name ?? this.title;
     }
 
     const gridCellContent = cell.querySelector('.gm-screen-grid-cell-content');
@@ -98,7 +116,7 @@ export class CompactJournalEntryDisplay extends foundry.applications.sheets.jour
   updateHeaderPageNav(cell: HTMLElement, isSinglePage: boolean) {
     const header = cell.querySelector('.gm-screen-grid-cell-header');
     header?.querySelector('.gm-journal-page-nav')?.remove();
-    if (!header || !isSinglePage || this.visiblePageCount < 2) {
+    if (!header || !isSinglePage || this.lockedPageId || this.visiblePageCount < 2) {
       return;
     }
 
@@ -133,7 +151,9 @@ export class CompactJournalEntryDisplay extends foundry.applications.sheets.jour
 
   /** @override */
   get id() {
-    return `gmscreen-journal-${this.document.id}`;
+    return this.lockedPageId
+      ? `gmscreen-journal-${this.document.id}-page-${this.lockedPageId}`
+      : `gmscreen-journal-${this.document.id}`;
   }
 
   async close(...args) {

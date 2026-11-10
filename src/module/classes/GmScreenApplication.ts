@@ -426,31 +426,23 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
       return;
     }
 
-    const children = event.target.closest('.gm-screen-tabs')?.children;
-    if (!children) {
+    // only ever drop next to another tab, inside a row of tabs
+    const target = event.target.closest('.gm-screen-tabs > button');
+    if (!(target instanceof HTMLElement) || target === this.draggedTab) {
       return;
     }
 
-    let targetRowIndex = -1;
-    let draggedRowIndex = -1;
-    Array.from(children).forEach((child, index) => {
-      if (!(child instanceof HTMLElement)) {
-        return;
+    // left half of the tab you're over = drop before it, right half = after it (works across rows too)
+    const rect = target.getBoundingClientRect();
+    if (event.clientX > rect.left + rect.width / 2) {
+      if (target.nextElementSibling !== this.draggedTab) {
+        target.after(this.draggedTab);
       }
-      if (children?.item(index) === event.target) {
-        targetRowIndex = index;
-      }
-      if (children?.item(index) === this.draggedTab) {
-        draggedRowIndex = index;
-      }
-    });
-
-    if (targetRowIndex > draggedRowIndex) {
-      event.target.after(this.draggedTab);
-    } else {
-      event.target.before(this.draggedTab);
+    } else if (target.previousElementSibling !== this.draggedTab) {
+      target.before(this.draggedTab);
     }
   }
+
 
   async _dragEndTab(event: DragEvent) {
     if (!this.draggedTab || !(event.target instanceof HTMLElement)) {
@@ -840,7 +832,11 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
       return;
     }
     const maxScroll = strip.scrollWidth - strip.clientWidth;
-    const overflowing = maxScroll > 1;
+    // compare the tabs with the room the whole row has, not the strip's current width: the strip
+    // shrinks when the arrows appear, which would otherwise keep the arrows showing for no reason
+    const rowWidth = scroller.parentElement?.clientWidth ?? scroller.clientWidth;
+    const rowRoom = rowWidth - (parseFloat(getComputedStyle(scroller).paddingLeft) || 0);
+    const overflowing = strip.scrollWidth > rowRoom + 1;
     scroller.classList.toggle('is-overflowing', overflowing);
     scroller.classList.toggle('can-scroll-prev', overflowing && strip.scrollLeft > 1);
     scroller.classList.toggle('can-scroll-next', overflowing && strip.scrollLeft < maxScroll - 1);

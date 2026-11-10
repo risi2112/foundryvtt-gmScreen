@@ -9,6 +9,8 @@
         <th>{{localize 'GMSCR.gridConfig.table.TabLabel'}}</th>
         <th>{{localize 'GMSCR.gridConfig.table.Columns'}}</th>
         <th>{{localize 'GMSCR.gridConfig.table.Rows'}}</th>
+        <th>{{localize 'GMSCR.gridConfig.table.Color'}}</th>
+        <th data-tooltip="{{localize 'GMSCR.gridConfig.table.JournalViewHint'}}">{{localize 'GMSCR.gridConfig.table.JournalView'}}</th>
         <th>{{localize 'GMSCR.gridConfig.table.Shared'}}</th>
         <th>{{localize 'Delete'}}</th>
       </tr>
@@ -18,7 +20,10 @@
       {{#each settings.grids as | grid id |}}
       {{> 'modules/gm-screen/templates/parts/settings-grid-config-table-row.hbs' gridId=id grid=grid
       defaultColumns=@root/defaultColumns
-      defaultRows=@root/defaultRows}}
+      defaultRows=@root/defaultRows
+      tabColorChoices=@root/tabColorChoices
+      tabColors=@root/tabColors
+      journalViewChoices=@root/journalViewChoices}}
       {{/each}}
     </tbody>
   </table>

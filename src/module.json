@@ -2,7 +2,7 @@
   "id": "gm-screen-risi",
   "title": "GM Screen (Arri's)",
   "description": "Arri's fork of GM Screen: a configurable grid of journal entries, rollable tables and more, with tab rows, pastel tab colors and per-tab journal views. Turn the original GM Screen off when using this one.",
-  "version": "5.8.0",
+  "version": "5.8.1",
   "authors": [
     {
       "name": "samulopez",
@@ -89,7 +89,7 @@
   },
   "bugs": "https://github.com/risi2112/foundryvtt-gmScreen/issues",
   "changelog": "https://github.com/risi2112/foundryvtt-gmScreen/releases",
-  "download": "https://github.com/risi2112/foundryvtt-gmScreen/releases/download/v5.8.0/module.zip",
+  "download": "https://github.com/risi2112/foundryvtt-gmScreen/releases/download/v5.8.1/module.zip",
   "manifest": "https://github.com/risi2112/foundryvtt-gmScreen/releases/latest/download/module.json",
   "readme": "https://raw.githubusercontent.com/risi2112/foundryvtt-gmScreen/main/README.md",
   "url": "https://github.com/risi2112/foundryvtt-gmScreen"

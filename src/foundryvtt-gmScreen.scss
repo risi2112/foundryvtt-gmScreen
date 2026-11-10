@@ -195,6 +195,8 @@ $transition-timing: 400ms;
       padding: 0;
       height: 100%;
       background: var(--gm-window-background);
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
     }
   }
 
@@ -215,6 +217,8 @@ $transition-timing: 400ms;
     align-items: flex-end;
 
     button {
+      border-top-left-radius: 7px;
+      border-top-right-radius: 7px;
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
       padding-left: 1em;
@@ -283,7 +287,7 @@ $transition-timing: 400ms;
       inset 0 0 variables.$space * 0.5 rgba(255, 255, 255, 0.2),
       0 0 variables.$space * 0.5 rgba(0, 0, 0, 0.2);
 
-    border-radius: variables.$space * 0.5;
+    border-radius: 8px;
 
     &:hover {
       .gm-screen-grid-cell-hint {

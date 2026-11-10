@@ -1,4 +1,26 @@
 .gm-screen-config {
+  /* softer, rounded look for the Tabs Config window */
+  table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  input[type='text'],
+  input[type='number'],
+  select {
+    border-radius: 6px;
+  }
+
+  input[type='checkbox'] {
+    border-radius: 4px;
+  }
+
+  button:not(.gm-screen-icon-button) {
+    border-radius: 8px;
+  }
+
   .hidden {
     display: none;
   }

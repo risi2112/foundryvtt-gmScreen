@@ -77,5 +77,5 @@ jobs:
           draft: false
           prerelease: ${{ steps.set-pr-deploy-info.outputs.prerelease }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: './dist/gm-screen/module.json,./dist/module.zip'
+          artifacts: './dist/gm-screen-risi/module.json,./dist/module.zip'
           tag: ${{ github.ref_name }}

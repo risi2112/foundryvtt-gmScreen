@@ -2,7 +2,7 @@ import { GmScreenConfig, GmScreenApi } from './gridTypes';
 
 declare global {
   interface ModuleConfig {
-    'gm-screen': {
+    'gm-screen-risi': {
       api?: GmScreenApi;
     };
     '_dev-mode': {
@@ -10,22 +10,23 @@ declare global {
     };
   }
   interface SettingConfig {
-    'gm-screen.columns': number;
-    'gm-screen.display-as-drawer': boolean;
-    'gm-screen.drawer-height': number;
-    'gm-screen.drawer-opacity': number;
-    'gm-screen.drawer-width': number;
-    'gm-screen.gm-screen-config': GmScreenConfig;
-    'gm-screen.migrated': {
+    'gm-screen-risi.columns': number;
+    'gm-screen-risi.display-as-drawer': boolean;
+    'gm-screen-risi.drawer-height': number;
+    'gm-screen-risi.drawer-opacity': number;
+    'gm-screen-risi.drawer-width': number;
+    'gm-screen-risi.gm-screen-config': GmScreenConfig;
+    'gm-screen-risi.migrated': {
       status: boolean;
       version: string;
     };
-    'gm-screen.condensedButton': boolean;
-    'gm-screen.reset': boolean;
-    'gm-screen.right-margin': number;
-    'gm-screen.rows': number;
-    'gm-screen.tab-overflow': 'scroll' | 'wrap';
-    'gm-screen.journal-view-mode': 'default' | 'single' | 'multiple';
+    'gm-screen-risi.condensedButton': boolean;
+    'gm-screen-risi.reset': boolean;
+    'gm-screen-risi.right-margin': number;
+    'gm-screen-risi.rows': number;
+    'gm-screen-risi.tab-overflow': 'scroll' | 'wrap';
+    'gm-screen-risi.journal-view-mode': 'default' | 'single' | 'multiple';
+    'gm-screen-risi.imported-from-original': boolean;
     'core.uiConfig': {
       colorScheme: {
         interface: 'light' | 'dark';

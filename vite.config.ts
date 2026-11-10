@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import copy from 'rollup-plugin-copy';
 
-const MODULE_ID = 'gm-screen';
+const MODULE_ID = 'gm-screen-risi';
 const PACKAGE_ID = `modules/${MODULE_ID}`;
 const MODULE_FULLNAME = 'foundryvtt-gmScreen';
 const ENTRY_TYPESCRIPT = `${MODULE_FULLNAME}.ts`;

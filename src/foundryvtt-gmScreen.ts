@@ -1,4 +1,5 @@
 import { gmScreenMigrate } from './module/migration';
+import { importOriginalClientSettings, importOriginalWorldSettings } from './module/importFromOriginal';
 import { getGame, getLocalization, getUserViewableGrids, log } from './module/helpers';
 import { MODULE_ABBREV, MODULE_ID, MySettings, TEMPLATES } from './module/constants';
 import { GmScreenSettings } from './module/classes/GmScreenSettings';
@@ -82,6 +83,9 @@ Handlebars.registerHelper(`${MODULE_ABBREV}-case`, function helperCase(value, op
 Hooks.once('init', async () => {
   log(true, `Initializing ${MODULE_ID}`);
 
+  // bring over this browser's display settings from the original GM Screen (first run only)
+  importOriginalClientSettings();
+
   // Register custom module settings
   GmScreenSettings.init();
 
@@ -94,6 +98,7 @@ Hooks.once('init', async () => {
 /* ------------------------------------ */
 Hooks.once('ready', async () => {
   await gmScreenMigrate();
+  await importOriginalWorldSettings();
 
   window[MODULE_ID] = { migration: gmScreenMigrate };
 

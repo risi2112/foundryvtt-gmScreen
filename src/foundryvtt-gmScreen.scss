@@ -446,6 +446,11 @@ $transition-timing: 400ms;
       flex: 1 1 0;
     }
 
+    // the page view is chosen per tab in Tabs Config, so hide Foundry's own single/all pages toggle
+    [data-action='toggleMode'] {
+      display: none !important;
+    }
+
     // last resort: if something really can't shrink (a huge image or a fixed-width table), scroll instead of hiding it
     .journal-entry-pages,
     section.journal-entry-page {

@@ -5,6 +5,117 @@
 
 $transition-timing: 400ms;
 
+@mixin gm-tab-strip {
+  /* ---- Tab strip: scrolls (or wraps) instead of running off the screen ---- */
+
+  .gm-screen-tabs-scroller {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  .gm-screen-tabs-scroller .gm-screen-tabs {
+    --fade-prev: 0px;
+    --fade-next: 0px;
+
+    position: relative;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 var(--fade-prev),
+      #000 calc(100% - var(--fade-next)),
+      transparent 100%
+    );
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    > button {
+      flex: 0 0 auto;
+    }
+  }
+
+  .gm-screen-tabs-scroller.can-scroll-prev .gm-screen-tabs {
+    --fade-prev: 24px;
+  }
+
+  .gm-screen-tabs-scroller.can-scroll-next .gm-screen-tabs {
+    --fade-next: 24px;
+  }
+
+  .gm-screen-tabs-arrow {
+    display: none;
+    flex: 0 0 auto;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+
+    i {
+      margin-right: 0;
+      font-size: 0.85em;
+    }
+  }
+
+  .gm-screen-tabs-scroller.is-overflowing .gm-screen-tabs-arrow {
+    display: block;
+  }
+
+  .gm-screen-tabs-scroller:not(.can-scroll-prev) .gm-screen-tabs-arrow.prev,
+  .gm-screen-tabs-scroller:not(.can-scroll-next) .gm-screen-tabs-arrow.next {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  /* Wrap mode: tabs stack into extra rows (they grow upward from the drawer) */
+  .gm-screen-tabs-scroller.tab-overflow-wrap {
+    .gm-screen-tabs {
+      flex-wrap: wrap;
+      overflow: visible;
+      mask-image: none;
+      row-gap: 2px;
+    }
+
+    .gm-screen-tabs-arrow {
+      display: none;
+    }
+  }
+
+  /* ---- Pastel tab colours ---- */
+
+  .gm-screen-tabs > button.has-tab-color {
+    background:
+      linear-gradient(
+        color-mix(in srgb, var(--gm-tab-color) 22%, transparent),
+        color-mix(in srgb, var(--gm-tab-color) 22%, transparent)
+      ),
+      var(--gm-screen-background, var(--color-cool-5-90));
+    border-top: 3px solid color-mix(in srgb, var(--gm-tab-color) 80%, transparent);
+
+    &.active {
+      background:
+        linear-gradient(
+          color-mix(in srgb, var(--gm-tab-color) 42%, transparent),
+          color-mix(in srgb, var(--gm-tab-color) 42%, transparent)
+        ),
+        var(--gm-screen-background, var(--color-cool-5-90));
+      border-top-color: var(--gm-tab-color);
+    }
+
+    &:hover {
+      text-shadow: 0 0 8px var(--gm-tab-color);
+    }
+  }
+}
+
+
 /* Expand the GM Screen Sideways when Sidebar is Collapsed */
 :root {
   --gm-screen-ui-right-width: 364px;
@@ -101,6 +212,7 @@ $transition-timing: 400ms;
     padding: 0 variables.$space;
     pointer-events: none;
     justify-content: flex-start;
+    align-items: flex-end;
 
     button {
       border-bottom-left-radius: 0;
@@ -146,6 +258,12 @@ $transition-timing: 400ms;
       display: flex;
       gap: variables.$space * 0.5;
     }
+
+    @include gm-tab-strip;
+  }
+
+  .gm-screen-container.has-tab-color {
+    box-shadow: inset 0 3px 0 0 color-mix(in srgb, var(--gm-tab-color) 70%, transparent);
   }
 
   .gm-screen-grid {
@@ -300,6 +418,51 @@ $transition-timing: 400ms;
       }
     }
 
+    /*
+     * Journals: make the sheet and its pages follow the cell's width so long text
+     * wraps instead of running past the right edge and being clipped.
+     */
+    > .journal-sheet,
+    > .journal-entry,
+    > form {
+      min-width: 0 !important;
+      max-width: 100% !important;
+    }
+
+    .journal-entry-content,
+    .journal-entry-pages,
+    .journal-entry-page,
+    .journal-page-content {
+      min-width: 0 !important;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .journal-entry-content {
+      flex: 1 1 0;
+    }
+
+    // last resort: if something really can't shrink (a huge image or a fixed-width table), scroll instead of hiding it
+    .journal-entry-pages,
+    section.journal-entry-page {
+      overflow-x: auto;
+    }
+
+    .journal-page-content,
+    section.journal-entry-page {
+      overflow-wrap: break-word;
+
+      table {
+        max-width: 100%;
+      }
+
+      img,
+      video,
+      iframe {
+        max-width: 100%;
+      }
+    }
+
     .compact-journal-entry {
       min-height: 100%; // needed for dnd5e
 
@@ -380,8 +543,13 @@ $transition-timing: 400ms;
     position: absolute;
     top: 2px;
     left: 10em;
+    right: 7em; // keep the tabs clear of the window header controls
     width: auto;
     z-index: 99;
+    display: flex;
+    align-items: flex-start;
+
+    @include gm-tab-strip;
 
     .gm-screen-tabs {
       display: flex;

@@ -1,5 +1,5 @@
 import { getGame, getLocalization, log } from '../helpers';
-import { MODULE_ABBREV, MODULE_ID, MyKeybindings, MySettings, TEMPLATES } from '../constants';
+import { MODULE_ABBREV, MODULE_ID, MyKeybindings, MySettings, TAB_COLORS, TEMPLATES } from '../constants';
 import { GmScreenConfig } from '../../gridTypes';
 
 import { ImportSettingsAction } from './ImportSettingsAction';
@@ -131,6 +131,37 @@ export class GmScreenSettings extends foundry.applications.api.HandlebarsApplica
       hint: `${MODULE_ABBREV}.settings.${MySettings.condensedButton}.Hint`,
     });
 
+    getGame().settings.register(MODULE_ID, MySettings.tabOverflow, {
+      name: `${MODULE_ABBREV}.settings.${MySettings.tabOverflow}.Name`,
+      hint: `${MODULE_ABBREV}.settings.${MySettings.tabOverflow}.Hint`,
+      default: 'scroll',
+      type: String,
+      choices: {
+        scroll: `${MODULE_ABBREV}.settings.${MySettings.tabOverflow}.Scroll`,
+        wrap: `${MODULE_ABBREV}.settings.${MySettings.tabOverflow}.Wrap`,
+      },
+      scope: 'client',
+      config: true,
+      onChange: () => getGame().modules.get(MODULE_ID)?.api?.refreshGmScreen(),
+    });
+
+    // Client scoped on purpose so the Force Client Settings module can lock it for players.
+    // A per-tab choice in the Tabs Config always wins over this default.
+    getGame().settings.register(MODULE_ID, MySettings.journalViewMode, {
+      name: `${MODULE_ABBREV}.settings.${MySettings.journalViewMode}.Name`,
+      hint: `${MODULE_ABBREV}.settings.${MySettings.journalViewMode}.Hint`,
+      default: 'default',
+      type: String,
+      choices: {
+        default: `${MODULE_ABBREV}.journalView.FoundryDefault`,
+        single: `${MODULE_ABBREV}.journalView.Single`,
+        multiple: `${MODULE_ABBREV}.journalView.Multiple`,
+      },
+      scope: 'client',
+      config: true,
+      onChange: () => getGame().modules.get(MODULE_ID)?.api?.refreshGmScreen(),
+    });
+
     getGame().settings.register(MODULE_ID, MySettings.reset, {
       name: `${MODULE_ABBREV}.settings.${MySettings.reset}.Name`,
       default: false,
@@ -204,7 +235,7 @@ export class GmScreenSettings extends foundry.applications.api.HandlebarsApplica
     id: 'gm-screen-tabs-config',
     classes: ['gm-screen-config'],
     height: 'auto',
-    width: 600,
+    width: 820,
     tag: 'form',
     form: {
       handler: GmScreenSettings.#onSubmit,
@@ -226,6 +257,32 @@ export class GmScreenSettings extends foundry.applications.api.HandlebarsApplica
     return getGame().settings.get(MODULE_ID, MySettings.columns);
   }
 
+  static get tabColorChoices() {
+    return {
+      '': `${MODULE_ABBREV}.tabColors.none`,
+      ...Object.fromEntries(Object.keys(TAB_COLORS).map((key) => [key, `${MODULE_ABBREV}.tabColors.${key}`])),
+    };
+  }
+
+  static get journalViewChoices() {
+    return {
+      '': `${MODULE_ABBREV}.journalView.UseDefault`,
+      single: `${MODULE_ABBREV}.journalView.Single`,
+      multiple: `${MODULE_ABBREV}.journalView.Multiple`,
+    };
+  }
+
+  /** Values shared by the table and every row template, including rows added later */
+  get rowTemplateData() {
+    return {
+      defaultColumns: this.columns,
+      defaultRows: this.rows,
+      tabColorChoices: GmScreenSettings.tabColorChoices,
+      tabColors: TAB_COLORS,
+      journalViewChoices: GmScreenSettings.journalViewChoices,
+    };
+  }
+
   get settingsData() {
     const gmScreenConfig = getGame().settings.get(MODULE_ID, MySettings.gmScreenConfig);
 
@@ -242,8 +299,7 @@ export class GmScreenSettings extends foundry.applications.api.HandlebarsApplica
     const parentContext = await super._prepareContext(options);
     const data = foundry.utils.mergeObject(parentContext, {
       settings: this.settingsData,
-      defaultRows: this.rows,
-      defaultColumns: this.columns,
+      ...this.rowTemplateData,
     });
 
     log(false, data);
@@ -311,9 +367,10 @@ export class GmScreenSettings extends foundry.applications.api.HandlebarsApplica
         name: '',
         columnOverride: '',
         rowOverride: '',
+        tabColor: '',
+        journalViewMode: '',
       },
-      defaultColumns: this.columns,
-      defaultRows: this.rows,
+      ...this.rowTemplateData,
     };
     const newRow = await foundry.applications.handlebars.renderTemplate(
       TEMPLATES[table].tableRow,
@@ -334,6 +391,16 @@ export class GmScreenSettings extends foundry.applications.api.HandlebarsApplica
 
   addEventListeners() {
     const html = this.element;
+    html.addEventListener('change', (e) => {
+      if (!(e.target instanceof HTMLSelectElement) || !e.target.classList.contains('gm-screen-tab-color-select')) {
+        return;
+      }
+      const swatch = e.target.closest('td')?.querySelector('.gm-screen-color-swatch');
+      if (swatch instanceof HTMLElement) {
+        swatch.style.setProperty('--swatch-color', TAB_COLORS[e.target.value] ?? 'transparent');
+        swatch.classList.toggle('empty', !TAB_COLORS[e.target.value]);
+      }
+    });
     html.addEventListener('click', (e) => {
       if (e == null || !(e.target instanceof HTMLElement)) {
         return;

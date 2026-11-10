@@ -24,6 +24,8 @@ declare global {
     'gm-screen.reset': boolean;
     'gm-screen.right-margin': number;
     'gm-screen.rows': number;
+    'gm-screen.tab-overflow': 'scroll' | 'wrap';
+    'gm-screen.journal-view-mode': 'default' | 'single' | 'multiple';
     'core.uiConfig': {
       colorScheme: {
         interface: 'light' | 'dark';

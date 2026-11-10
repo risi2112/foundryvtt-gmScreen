@@ -27,7 +27,31 @@ export enum MySettings {
   reset = 'reset',
   rightMargin = 'right-margin',
   rows = 'rows',
+  tabOverflow = 'tab-overflow',
+  journalViewMode = 'journal-view-mode',
 }
+
+/**
+ * Soft pastel palette for tab colour-coding. Keys are what gets stored in the
+ * world config, so the actual shades can be tuned later without migrating data.
+ */
+export const TAB_COLORS: Record<string, string> = {
+  rose: '#f2a7b5',
+  peach: '#f5c29e',
+  butter: '#f2dd9a',
+  sage: '#bfd6a0',
+  mint: '#a9dfc2',
+  sky: '#a5cdee',
+  periwinkle: '#b6bdf5',
+  lavender: '#cdb8ef',
+  blush: '#efbfd9',
+  sand: '#dccbb4',
+  slate: '#b3bfcb',
+};
+
+export type JournalViewMode = 'single' | 'multiple';
+
+export const JOURNAL_VIEW_MODES: JournalViewMode[] = ['single', 'multiple'];
 
 export enum MyKeybindings {
   openCloseScreen = 'openCloseScreen',

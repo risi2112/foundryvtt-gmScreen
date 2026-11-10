@@ -11,6 +11,8 @@ export interface GmScreenGrid {
   rowOverride?: number;
   columnOverride?: number;
   cssClass: string; // used for styling the grid container
+  tabColor?: string; // key of TAB_COLORS, empty for no colour
+  journalViewMode?: 'single' | 'multiple' | ''; // empty means use the client default setting
 }
 
 export interface GmScreenGridEntry {

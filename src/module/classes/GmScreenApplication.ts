@@ -10,7 +10,16 @@ import {
   postRenderV2,
   updateCSSPropertyVariable,
 } from '../helpers';
-import { MODULE_ABBREV, MODULE_ID, MySettings, TAB_GROUP_NAME, TEMPLATES } from '../constants';
+import {
+  JOURNAL_VIEW_MODES,
+  JournalViewMode,
+  MODULE_ABBREV,
+  MODULE_ID,
+  MySettings,
+  TAB_COLORS,
+  TAB_GROUP_NAME,
+  TEMPLATES,
+} from '../constants';
 import { GmScreenConfig, GmScreenGrid, GmScreenGridEntry } from '../../gridTypes';
 
 import { GmScreenSettings } from './GmScreenSettings';
@@ -28,6 +37,8 @@ enum ClickAction {
   toggleGmScreen = 'toggle-gm-screen',
   tab = 'tab',
   chooseImage = 'chooseImage',
+  scrollTabsPrev = 'scrollTabsPrev',
+  scrollTabsNext = 'scrollTabsNext',
 }
 
 interface CustomOptions {
@@ -91,6 +102,8 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
   draggedTab: HTMLElement | undefined;
 
   pendingCellRefresh: PendingCellRefresh | undefined;
+
+  tabStripResizeObserver: ResizeObserver | undefined;
 
   constructor(options = {}) {
     super(options);
@@ -649,6 +662,14 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
         }
         break;
       }
+      case ClickAction.scrollTabsPrev: {
+        this.scrollTabStrip(-1);
+        break;
+      }
+      case ClickAction.scrollTabsNext: {
+        this.scrollTabStrip(1);
+        break;
+      }
       case ClickAction.toggleGmScreen: {
         try {
           this.toggleGmScreenVisibility();
@@ -736,6 +757,105 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
     } catch (error) {
       log(true, 'error setting active tab', error);
     }
+  }
+
+  /**
+   * @override
+   * Keep the newly selected tab visible when the tab strip is scrolled.
+   */
+  changeTab(tab: string, group: string, options = {}) {
+    super.changeTab(tab, group, options);
+    if (group === TAB_GROUP_NAME) {
+      this.scrollTabIntoView(tab);
+    }
+  }
+
+  get tabStrip(): HTMLElement | null {
+    const strip = this.element?.querySelector('.gm-screen-tabs');
+    return strip instanceof HTMLElement ? strip : null;
+  }
+
+  /**
+   * Scrolls the tab strip by most of its visible width. direction: -1 = left, 1 = right
+   */
+  scrollTabStrip(direction: -1 | 1) {
+    const strip = this.tabStrip;
+    if (!strip) {
+      return;
+    }
+    strip.scrollBy({ left: direction * Math.max(strip.clientWidth * 0.75, 100), behavior: 'smooth' });
+  }
+
+  scrollTabIntoView(tabId?: string) {
+    const strip = this.tabStrip;
+    if (!strip || strip.scrollWidth <= strip.clientWidth) {
+      return;
+    }
+    const button = Array.from(strip.querySelectorAll('button')).find(
+      (btn) => btn instanceof HTMLElement && (tabId ? btn.dataset.tab === tabId : btn.classList.contains('active'))
+    );
+    if (!(button instanceof HTMLElement)) {
+      return;
+    }
+
+    const padding = 24; // leave room so the fade on the edges doesn't cover the tab
+    // .gm-screen-tabs is position: relative, so offsetLeft is measured from the strip itself
+    const left = button.offsetLeft;
+    const right = left + button.offsetWidth;
+    if (left < strip.scrollLeft + padding) {
+      strip.scrollTo({ left: Math.max(left - padding, 0), behavior: 'smooth' });
+    } else if (right > strip.scrollLeft + strip.clientWidth - padding) {
+      strip.scrollTo({ left: right - strip.clientWidth + padding, behavior: 'smooth' });
+    }
+  }
+
+  /**
+   * Shows/hides the arrow buttons and edge fades depending on whether there is
+   * anything hidden to the left or right of the visible tabs.
+   */
+  updateTabStripOverflow() {
+    const strip = this.tabStrip;
+    const scroller = strip?.closest('.gm-screen-tabs-scroller');
+    if (!strip || !(scroller instanceof HTMLElement)) {
+      return;
+    }
+    const maxScroll = strip.scrollWidth - strip.clientWidth;
+    const overflowing = maxScroll > 1;
+    scroller.classList.toggle('is-overflowing', overflowing);
+    scroller.classList.toggle('can-scroll-prev', overflowing && strip.scrollLeft > 1);
+    scroller.classList.toggle('can-scroll-next', overflowing && strip.scrollLeft < maxScroll - 1);
+  }
+
+  bindTabStrip() {
+    const strip = this.tabStrip;
+    if (!strip) {
+      return;
+    }
+
+    // a vertical mouse wheel scrolls the tabs sideways
+    strip.addEventListener(
+      'wheel',
+      (event: WheelEvent) => {
+        if (strip.scrollWidth <= strip.clientWidth || Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+          return;
+        }
+        event.preventDefault();
+        strip.scrollBy({ left: event.deltaY });
+      },
+      { passive: false }
+    );
+    strip.addEventListener('scroll', () => this.updateTabStripOverflow(), { passive: true });
+
+    this.tabStripResizeObserver?.disconnect();
+    this.tabStripResizeObserver = new ResizeObserver(() => this.updateTabStripOverflow());
+    this.tabStripResizeObserver.observe(strip);
+
+    this.updateTabStripOverflow();
+    // wait a frame so widths are final before scrolling the active tab into view
+    requestAnimationFrame(() => {
+      this.scrollTabIntoView();
+      this.updateTabStripOverflow();
+    });
   }
 
   updateClassesAndFixButtons() {
@@ -987,6 +1107,7 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
     dragDropTabs.bind(this.element);
 
     this.addListeners();
+    this.bindTabStrip();
 
     if (this.displayDrawer) {
       this.setPosition({
@@ -1478,6 +1599,18 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
               gridCellContent?.classList.add(...application.options.classes);
             }
 
+            if (application instanceof CompactJournalEntryDisplay) {
+              const container = gridEntry.closest('.gm-screen-container');
+              const gridId = container instanceof HTMLElement ? container.dataset.tab : undefined;
+              const viewMode = this.getJournalViewMode(gridId);
+              // only push the mode when it changed so a quick toggle in the cell isn't undone by every refresh
+              if (viewMode !== application.appliedViewMode) {
+                application.appliedViewMode = viewMode;
+                application.render({ force: true, mode: CompactJournalEntryDisplay.toFoundryViewMode(viewMode) });
+                return;
+              }
+            }
+
             application.render(true);
           })
           .catch((e) => {
@@ -1497,6 +1630,20 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
 
     // set some CSS Variables for child element use
     updateCSSPropertyVariable(element, '.gm-screen-grid-cell', 'width', '--this-cell-width');
+  }
+
+  /**
+   * Which journal view a tab should use: the tab's own choice from the Tabs Config,
+   * otherwise this client's default setting (which Force Client Settings can lock).
+   * undefined means leave it to Foundry.
+   */
+  getJournalViewMode(gridId?: string): JournalViewMode | undefined {
+    const tabMode = gridId ? this.data.grids[gridId]?.journalViewMode : undefined;
+    if (tabMode && JOURNAL_VIEW_MODES.includes(tabMode)) {
+      return tabMode;
+    }
+    const clientMode = getGame().settings.get(MODULE_ID, MySettings.journalViewMode);
+    return JOURNAL_VIEW_MODES.find((mode) => mode === clientMode);
   }
 
   /**
@@ -1535,6 +1682,7 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
     const drawerHeight = getGame().settings.get(MODULE_ID, MySettings.drawerHeight);
     const drawerOpacity = getGame().settings.get(MODULE_ID, MySettings.drawerOpacity);
     const condensedButton = getGame().settings.get(MODULE_ID, MySettings.condensedButton);
+    const tabOverflow = getGame().settings.get(MODULE_ID, MySettings.tabOverflow) === 'wrap' ? 'wrap' : 'scroll';
 
     const grids = this.getHydratedGrids();
 
@@ -1548,6 +1696,8 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
       grids,
       isGM: !!getGame().user?.isGM,
       condensedButton,
+      tabOverflow,
+      tabColors: TAB_COLORS,
       data: this.data,
       columns: this.columns,
       rows: this.rows,
@@ -1567,6 +1717,7 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
       group: TAB_GROUP_NAME,
       label: grids[id].grid.name,
       cssClass: grids[id].grid.cssClass,
+      color: grids[id].grid.tabColor ? TAB_COLORS[grids[id].grid.tabColor] : undefined,
     }));
 
     log(false, '_prepareContext', {

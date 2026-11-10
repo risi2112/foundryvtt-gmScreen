@@ -15,6 +15,20 @@
     <input type="number" name="grids.{{gridId}}.rowOverride" placeholder="{{defaultRows}}" value="{{grid.rowOverride}}"
       data-dtype="Number">
   </td>
+  <td>
+    <div class="gm-screen-color-cell">
+      <span class="gm-screen-color-swatch {{#unless (lookup tabColors grid.tabColor)}}empty{{/unless}}"
+        style="--swatch-color: {{#if (lookup tabColors grid.tabColor)}}{{lookup tabColors grid.tabColor}}{{else}}transparent{{/if}}"></span>
+      <select name="grids.{{gridId}}.tabColor" class="gm-screen-tab-color-select">
+        {{selectOptions tabColorChoices selected=grid.tabColor localize=true}}
+      </select>
+    </div>
+  </td>
+  <td>
+    <select name="grids.{{gridId}}.journalViewMode">
+      {{selectOptions journalViewChoices selected=grid.journalViewMode localize=true}}
+    </select>
+  </td>
   <td class="textCenter">
     <input type="checkbox" name="grids.{{gridId}}.isShared" {{#if grid.isShared}}checked{{/if}}>
   </td>

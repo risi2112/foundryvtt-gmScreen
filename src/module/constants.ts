@@ -1,4 +1,7 @@
-export const MODULE_ID = 'gm-screen';
+export const MODULE_ID = 'gm-screen-risi';
+
+/** The original GM Screen module this one was forked from; used once to bring over its settings */
+export const ORIGINAL_MODULE_ID = 'gm-screen';
 export const MODULE_ABBREV = 'GMSCR';
 
 export const TEMPLATES = {
@@ -29,6 +32,7 @@ export enum MySettings {
   rows = 'rows',
   tabOverflow = 'tab-overflow',
   journalViewMode = 'journal-view-mode',
+  importedFromOriginal = 'imported-from-original',
 }
 
 /**

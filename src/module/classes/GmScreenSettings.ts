@@ -47,6 +47,13 @@ export class GmScreenSettings extends foundry.applications.api.HandlebarsApplica
       },
     });
 
+    getGame().settings.register(MODULE_ID, MySettings.importedFromOriginal, {
+      config: false,
+      default: false,
+      scope: 'world',
+      type: Boolean,
+    });
+
     getGame().settings.register(MODULE_ID, MySettings.migrated, {
       config: false,
       default: { status: false, version: '1.2.2' },

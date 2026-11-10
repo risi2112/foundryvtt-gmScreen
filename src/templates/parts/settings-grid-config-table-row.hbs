@@ -16,6 +16,11 @@
       data-dtype="Number">
   </td>
   <td>
+    <select name="grids.{{gridId}}.tabRow">
+      {{selectOptions tabRowChoices selected=grid.tabRow localize=true}}
+    </select>
+  </td>
+  <td>
     <div class="gm-screen-color-cell">
       <span class="gm-screen-color-swatch {{#unless (lookup tabColors grid.tabColor)}}empty{{/unless}}"
         style="--swatch-color: {{#if (lookup tabColors grid.tabColor)}}{{lookup tabColors grid.tabColor}}{{else}}transparent{{/if}}"></span>

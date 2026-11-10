@@ -51,6 +51,11 @@ export const TAB_COLORS: Record<string, string> = {
 
 export type JournalViewMode = 'single' | 'multiple';
 
+export type TabRow = 'front' | 'middle' | 'back';
+
+/** Tab rows from the one touching the screen to the one furthest back */
+export const TAB_ROWS: TabRow[] = ['front', 'middle', 'back'];
+
 export const JOURNAL_VIEW_MODES: JournalViewMode[] = ['single', 'multiple'];
 
 export enum MyKeybindings {

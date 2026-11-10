@@ -113,7 +113,9 @@
         "TabOrder": "Order",
         "Color": "Color",
         "JournalView": "Journal View",
-        "JournalViewHint": "How journals on this tab show their pages. \"Use default\" falls back to the Journal Page View module setting."
+        "JournalViewHint": "How journals on this tab show their pages. \"Use default\" falls back to the Journal Page View module setting.",
+        "Row": "Row",
+        "RowHint": "Which row of tabs this tab sits in. Front is the row touching the screen; Back is the top row. Drawer mode only."
       },
       "errors": {
         "empty": "Cannot save the grid with no tabs."
@@ -146,6 +148,11 @@
       "blush": "Blush",
       "sand": "Sand",
       "slate": "Slate"
+    },
+    "tabRows": {
+      "front": "Front",
+      "middle": "Middle",
+      "back": "Back"
     }
   }
 }

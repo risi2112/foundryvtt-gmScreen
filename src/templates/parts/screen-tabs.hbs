@@ -1,20 +1,24 @@
 <div class='gm-screen-actions sheet-tabs tabs' data-application-part="tabs" aria-roledescription="{{localize "SHEETS.FormNavLabel"}}">
 
-  <div class="gm-screen-tabs-scroller tab-overflow-{{tabOverflow}}">
-    <button type='button' class="gm-screen-tabs-arrow prev" data-action="scrollTabsPrev" tabindex="-1"
-        aria-label="{{localize 'GMSCR.gmScreen.ScrollTabsLeft'}}"><i class="fas fa-chevron-left"></i></button>
-    <div class="gm-screen-tabs">
-      {{#each tabs as |tab|}}
-      <button type='button' data-action="tab" data-group="{{tab.group}}" data-tab="{{tab.id}}"
-          class="{{tab.cssClass}} {{#if tab.color}}has-tab-color{{/if}}"
-          {{#if tab.color}}style="--gm-tab-color: {{tab.color}}"{{/if}}
-          {{#if tab.tooltip}}data-tooltip="{{tab.tooltip}}"{{/if}}>
-          {{#if tab.label}}{{localize tab.label}}{{/if}}
-      </button>
-      {{/each}}
+  <div class="gm-screen-tabs-rows">
+    {{#each tabRows as |row|}}
+    <div class="gm-screen-tabs-scroller tab-overflow-{{@root/tabOverflow}} tab-row-{{row.id}}" data-row="{{row.id}}">
+      <button type='button' class="gm-screen-tabs-arrow prev" data-action="scrollTabsPrev" tabindex="-1"
+          aria-label="{{localize 'GMSCR.gmScreen.ScrollTabsLeft'}}"><i class="fas fa-chevron-left"></i></button>
+      <div class="gm-screen-tabs" data-row="{{row.id}}">
+        {{#each row.tabs as |tab|}}
+        <button type='button' data-action="tab" data-group="{{tab.group}}" data-tab="{{tab.id}}"
+            class="{{tab.cssClass}} {{#if tab.color}}has-tab-color{{/if}}"
+            {{#if tab.color}}style="--gm-tab-color: {{tab.color}}"{{/if}}
+            {{#if tab.tooltip}}data-tooltip="{{tab.tooltip}}"{{/if}}>
+            {{#if tab.label}}{{localize tab.label}}{{/if}}
+        </button>
+        {{/each}}
+      </div>
+      <button type='button' class="gm-screen-tabs-arrow next" data-action="scrollTabsNext" tabindex="-1"
+          aria-label="{{localize 'GMSCR.gmScreen.ScrollTabsRight'}}"><i class="fas fa-chevron-right"></i></button>
     </div>
-    <button type='button' class="gm-screen-tabs-arrow next" data-action="scrollTabsNext" tabindex="-1"
-        aria-label="{{localize 'GMSCR.gmScreen.ScrollTabsRight'}}"><i class="fas fa-chevron-right"></i></button>
+    {{/each}}
   </div>
   {{#if displayDrawer}}
   <div class="meta-actions">

@@ -18,6 +18,8 @@ import {
   MySettings,
   TAB_COLORS,
   TAB_GROUP_NAME,
+  TAB_ROWS,
+  TabRow,
   TEMPLATES,
 } from '../constants';
 import { GmScreenConfig, GmScreenGrid, GmScreenGridEntry } from '../../gridTypes';
@@ -456,21 +458,39 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
     const newGmScreenConfig = foundry.utils.deepClone(this.data);
     newGmScreenConfig.grids = {};
 
-    Array.from(event.target.closest('.gm-screen-tabs')?.children || []).forEach((item) => {
-      if (!(item instanceof HTMLElement)) {
-        return;
-      }
+    // walk every row, front row first, so tabs keep their order and pick up the row they were dropped in
+    const rowIndex = (strip: HTMLElement) => TAB_ROWS.indexOf((strip.dataset.row as TabRow) ?? 'front');
+    const strips = [...this.tabStrips].sort((a, b) => rowIndex(a) - rowIndex(b));
 
-      const gridId = item.dataset.tab;
-      if (!gridId) {
-        return;
+    strips.forEach((strip) => {
+      Array.from(strip.children).forEach((item) => {
+        if (!(item instanceof HTMLElement)) {
+          return;
+        }
+
+        const gridId = item.dataset.tab;
+        if (!gridId || !this.data.grids[gridId]) {
+          return;
+        }
+        newGmScreenConfig.grids[gridId] = {
+          ...this.data.grids[gridId],
+          // the pop-out shows a single row, so only the drawer can move a tab between rows
+          ...(this.displayDrawer && strip.dataset.row ? { tabRow: strip.dataset.row as TabRow } : {}),
+        };
+      });
+    });
+
+    // never drop a tab that wasn't on screen
+    Object.keys(this.data.grids).forEach((gridId) => {
+      if (!newGmScreenConfig.grids[gridId]) {
+        newGmScreenConfig.grids[gridId] = this.data.grids[gridId];
       }
-      newGmScreenConfig.grids[gridId] = this.data.grids[gridId];
     });
 
     this.draggedTab = undefined;
     await getGame().settings.set(MODULE_ID, MySettings.gmScreenConfig, newGmScreenConfig);
   }
+
 
   async handleClickEvent(e: MouseEvent) {
     e.preventDefault();
@@ -663,11 +683,11 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
         break;
       }
       case ClickAction.scrollTabsPrev: {
-        this.scrollTabStrip(-1);
+        this.scrollTabStrip(e.currentTarget, -1);
         break;
       }
       case ClickAction.scrollTabsNext: {
-        this.scrollTabStrip(1);
+        this.scrollTabStrip(e.currentTarget, 1);
         break;
       }
       case ClickAction.toggleGmScreen: {
@@ -770,31 +790,30 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
     }
   }
 
-  get tabStrip(): HTMLElement | null {
-    const strip = this.element?.querySelector('.gm-screen-tabs');
-    return strip instanceof HTMLElement ? strip : null;
+  /** Every row of tabs (one in the pop-out, up to three in the drawer) */
+  get tabStrips(): HTMLElement[] {
+    return Array.from(this.element?.querySelectorAll('.gm-screen-tabs') ?? []).filter(
+      (strip): strip is HTMLElement => strip instanceof HTMLElement
+    );
   }
 
   /**
-   * Scrolls the tab strip by most of its visible width. direction: -1 = left, 1 = right
+   * Scrolls one row of tabs by most of its visible width. direction: -1 = left, 1 = right
    */
-  scrollTabStrip(direction: -1 | 1) {
-    const strip = this.tabStrip;
-    if (!strip) {
+  scrollTabStrip(arrow: HTMLElement, direction: -1 | 1) {
+    const strip = arrow.closest('.gm-screen-tabs-scroller')?.querySelector('.gm-screen-tabs');
+    if (!(strip instanceof HTMLElement)) {
       return;
     }
     strip.scrollBy({ left: direction * Math.max(strip.clientWidth * 0.75, 100), behavior: 'smooth' });
   }
 
   scrollTabIntoView(tabId?: string) {
-    const strip = this.tabStrip;
-    if (!strip || strip.scrollWidth <= strip.clientWidth) {
-      return;
-    }
-    const button = Array.from(strip.querySelectorAll('button')).find(
-      (btn) => btn instanceof HTMLElement && (tabId ? btn.dataset.tab === tabId : btn.classList.contains('active'))
-    );
-    if (!(button instanceof HTMLElement)) {
+    const button = this.tabStrips
+      .flatMap((strip) => Array.from(strip.querySelectorAll('button')))
+      .find((btn) => (tabId ? btn.dataset.tab === tabId : btn.classList.contains('active')));
+    const strip = button?.parentElement;
+    if (!button || !strip || strip.scrollWidth <= strip.clientWidth) {
       return;
     }
 
@@ -811,12 +830,11 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
 
   /**
    * Shows/hides the arrow buttons and edge fades depending on whether there is
-   * anything hidden to the left or right of the visible tabs.
+   * anything hidden to the left or right of the visible tabs in a row.
    */
-  updateTabStripOverflow() {
-    const strip = this.tabStrip;
-    const scroller = strip?.closest('.gm-screen-tabs-scroller');
-    if (!strip || !(scroller instanceof HTMLElement)) {
+  updateTabStripOverflow(strip: HTMLElement) {
+    const scroller = strip.closest('.gm-screen-tabs-scroller');
+    if (!(scroller instanceof HTMLElement)) {
       return;
     }
     const maxScroll = strip.scrollWidth - strip.clientWidth;
@@ -826,35 +844,37 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
     scroller.classList.toggle('can-scroll-next', overflowing && strip.scrollLeft < maxScroll - 1);
   }
 
+  updateAllTabStripOverflow() {
+    this.tabStrips.forEach((strip) => this.updateTabStripOverflow(strip));
+  }
+
   bindTabStrip() {
-    const strip = this.tabStrip;
-    if (!strip) {
-      return;
-    }
-
-    // a vertical mouse wheel scrolls the tabs sideways
-    strip.addEventListener(
-      'wheel',
-      (event: WheelEvent) => {
-        if (strip.scrollWidth <= strip.clientWidth || Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
-          return;
-        }
-        event.preventDefault();
-        strip.scrollBy({ left: event.deltaY });
-      },
-      { passive: false }
-    );
-    strip.addEventListener('scroll', () => this.updateTabStripOverflow(), { passive: true });
-
+    const strips = this.tabStrips;
     this.tabStripResizeObserver?.disconnect();
-    this.tabStripResizeObserver = new ResizeObserver(() => this.updateTabStripOverflow());
-    this.tabStripResizeObserver.observe(strip);
+    this.tabStripResizeObserver = new ResizeObserver(() => this.updateAllTabStripOverflow());
 
-    this.updateTabStripOverflow();
+    strips.forEach((strip) => {
+      // a vertical mouse wheel scrolls the tabs sideways
+      strip.addEventListener(
+        'wheel',
+        (event: WheelEvent) => {
+          if (strip.scrollWidth <= strip.clientWidth || Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+            return;
+          }
+          event.preventDefault();
+          strip.scrollBy({ left: event.deltaY });
+        },
+        { passive: false }
+      );
+      strip.addEventListener('scroll', () => this.updateTabStripOverflow(strip), { passive: true });
+      this.tabStripResizeObserver?.observe(strip);
+    });
+
+    this.updateAllTabStripOverflow();
     // wait a frame so widths are final before scrolling the active tab into view
     requestAnimationFrame(() => {
       this.scrollTabIntoView();
-      this.updateTabStripOverflow();
+      this.updateAllTabStripOverflow();
     });
   }
 
@@ -1716,7 +1736,14 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
       label: grids[id].grid.name,
       cssClass: grids[id].grid.cssClass,
       color: grids[id].grid.tabColor ? TAB_COLORS[grids[id].grid.tabColor] : undefined,
+      row: this.displayDrawer && TAB_ROWS.includes(grids[id].grid.tabRow as TabRow) ? grids[id].grid.tabRow : 'front',
     }));
+
+    // back row first so it renders on top; empty rows (e.g. a player with no shared tabs there) are skipped
+    newAppData.tabRows = [...TAB_ROWS]
+      .reverse()
+      .map((row) => ({ id: row, tabs: newAppData.tabs.filter((tab) => tab.row === row) }))
+      .filter((row) => row.tabs.length > 0);
 
     log(false, '_prepareContext', {
       data: this.data,

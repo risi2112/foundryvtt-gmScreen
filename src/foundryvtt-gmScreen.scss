@@ -14,7 +14,7 @@ $transition-timing: 400ms;
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;
-    flex: 0 1 auto;
+    flex: 1 1 0; // use all the room up to the buttons on the right, so shelves don't wrap early
     min-width: 0;
 
     > .gm-screen-tabs-scroller {
@@ -356,6 +356,27 @@ $transition-timing: 400ms;
   .gm-screen-grid-cell-header {
     @include mixins.spaced(variables.$space * 0.5);
 
+    .gm-journal-page-nav {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 2px;
+
+      button {
+        width: auto;
+        height: auto;
+        min-height: 0;
+        margin: 0;
+        padding: 0 6px;
+        line-height: 1.4;
+        border-radius: 6px;
+        font-size: 0.8em;
+
+        i {
+          margin: 0;
+        }
+      }
+    }
+
     align-items: center;
     display: flex;
     width: 100%;
@@ -476,6 +497,16 @@ $transition-timing: 400ms;
     // the page view is chosen per tab in Tabs Config, so hide Foundry's own single/all pages toggle
     [data-action='toggleMode'] {
       display: none !important;
+    }
+
+    // single page view: drop the journal's sidebar entirely so the page gets the whole cell
+    &.gm-journal-single-page {
+      [data-application-part='sidebar'],
+      .journal-sidebar,
+      [data-action='previousPage'],
+      [data-action='nextPage'] {
+        display: none !important;
+      }
     }
 
     // last resort: if something really can't shrink (a huge image or a fixed-width table), scroll instead of hiding it

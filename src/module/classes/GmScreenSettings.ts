@@ -150,7 +150,7 @@ export class GmScreenSettings extends foundry.applications.api.HandlebarsApplica
     getGame().settings.register(MODULE_ID, MySettings.journalViewMode, {
       name: `${MODULE_ABBREV}.settings.${MySettings.journalViewMode}.Name`,
       hint: `${MODULE_ABBREV}.settings.${MySettings.journalViewMode}.Hint`,
-      default: 'default',
+      default: 'single',
       type: String,
       choices: {
         default: `${MODULE_ABBREV}.journalView.FoundryDefault`,
@@ -377,7 +377,7 @@ export class GmScreenSettings extends foundry.applications.api.HandlebarsApplica
         columnOverride: '',
         rowOverride: '',
         tabColor: '',
-        journalViewMode: '',
+        journalViewMode: 'single',
         tabRow: 'front',
       },
       ...this.rowTemplateData,

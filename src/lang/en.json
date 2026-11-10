@@ -133,7 +133,9 @@
       "FoundryDefault": "Foundry default",
       "UseDefault": "Use default",
       "Single": "Single page",
-      "Multiple": "All pages"
+      "Multiple": "All pages",
+      "PreviousPage": "Previous page",
+      "NextPage": "Next page"
     },
     "tabColors": {
       "none": "None",

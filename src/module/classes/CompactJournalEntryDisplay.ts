@@ -1,4 +1,5 @@
-import { JournalViewMode } from '../constants';
+import { getGame, getLocalization } from '../helpers';
+import { JournalViewMode, MODULE_ABBREV } from '../constants';
 
 export class CompactJournalEntryDisplay extends foundry.applications.sheets.journal.JournalEntrySheet {
   cellId: string;
@@ -70,12 +71,63 @@ export class CompactJournalEntryDisplay extends foundry.applications.sheets.jour
       }
       gridCellContent.classList.remove(...gridCellContent.classList);
       gridCellContent.classList.add('gm-screen-grid-cell-content');
+
+      // in single page view the journal sidebar is hidden (see the stylesheet) to give the page more room,
+      // so the page arrows move up into the cell's title bar instead
+      const isSinglePage = this.mode === foundry.applications.sheets.journal.JournalEntrySheet.VIEW_MODES.SINGLE;
+      gridCellContent.classList.toggle('gm-journal-single-page', isSinglePage);
+      this.updateHeaderPageNav(cell, isSinglePage);
     }
 
     if (!this._initialRenderDone) {
       this._initialRenderDone = true;
       // incomplete type definitions
       this.toggleSidebar();
+    }
+  }
+
+  get visiblePageCount() {
+    const { user } = getGame();
+    return this.document.pages.filter((page) => !user || page.testUserPermission(user, 'OBSERVER')).length;
+  }
+
+  /**
+   * Adds ‹ › buttons next to the cell title when a single page journal has more than one page.
+   * They press the journal's own (hidden) previous/next page buttons.
+   */
+  updateHeaderPageNav(cell: HTMLElement, isSinglePage: boolean) {
+    const header = cell.querySelector('.gm-screen-grid-cell-header');
+    header?.querySelector('.gm-journal-page-nav')?.remove();
+    if (!header || !isSinglePage || this.visiblePageCount < 2) {
+      return;
+    }
+
+    const nav = document.createElement('span');
+    nav.classList.add('gm-journal-page-nav');
+    [
+      { action: 'previousPage', icon: 'fa-chevron-left', label: 'PreviousPage' },
+      { action: 'nextPage', icon: 'fa-chevron-right', label: 'NextPage' },
+    ].forEach(({ action, icon, label }) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.tooltip = getLocalization().localize(`${MODULE_ABBREV}.journalView.${label}`);
+      button.innerHTML = `<i class="fas ${icon}"></i>`;
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const sheetButton = (this.form ?? this.element)?.querySelector(`[data-action="${action}"]`);
+        if (sheetButton instanceof HTMLElement) {
+          sheetButton.click();
+        }
+      });
+      nav.append(button);
+    });
+
+    const title = header.querySelector('.gm-screen-grid-cell-title');
+    if (title) {
+      title.after(nav);
+    } else {
+      header.append(nav);
     }
   }
 

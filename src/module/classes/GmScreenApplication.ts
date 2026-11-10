@@ -1262,6 +1262,9 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
     dndNpcStatBlock: boolean
   ): Promise<GmScreenApp | undefined> {
     const relevantDocument = await this.getRelevantGmScreenDocument(entityUuid);
+    // Foundry keeps one window per id, so ids include the cell: the same document can then sit in
+    // several cells (or tabs) at once without them stealing each other's content
+    const cellKey = cellId.replace('#', '');
 
     if (!relevantDocument) {
       await this.apps[cellId]?.close();
@@ -1324,7 +1327,7 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
             document: relevantDocument,
             editable: false,
             cellId,
-            id: `gmscreen-journal-${relevantDocument.id}`,
+            id: `gmscreen-journal-${relevantDocument.id}-${cellKey}`,
             window: {
               ...sheet.options.window,
               positioned: false,
@@ -1338,7 +1341,7 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
           document: relevantDocument,
           editable: false,
           cellId,
-          id: `gmscreen-journal-${relevantDocument.id}`,
+          id: `gmscreen-journal-${relevantDocument.id}-${cellKey}`,
           window: {
             positioned: false,
             resizable: false,
@@ -1357,7 +1360,7 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
           editable: false,
           cellId,
           lockedPageId: relevantDocument.id,
-          id: `gmscreen-journal-${relevantDocument.parent.id}-page-${relevantDocument.id}`,
+          id: `gmscreen-journal-${relevantDocument.parent.id}-page-${relevantDocument.id}-${cellKey}`,
           window: {
             positioned: false,
             resizable: false,
@@ -1378,7 +1381,7 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
           new (SheetClass as JournalEntryPageProseMirrorSheetConstructor)({
             ...sheet.options,
             mode: 'view',
-            id: `gmscreen-text-${sheet.document.id}`,
+            id: `gmscreen-text-${sheet.document.id}-${cellKey}`,
             // needed to show the journal page with styles
             classes: ['application', 'sheet', 'journal-sheet', 'journal-entry', 'maximizing'],
             document: relevantDocument,
@@ -1434,7 +1437,7 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
 
         this.apps[cellId] = new CompactJournalEntryPageDisplay({
           document: relevantDocument,
-          id: `gmscreen-journalentrypage-${relevantDocument.id}`,
+          id: `gmscreen-journalentrypage-${relevantDocument.id}-${cellKey}`,
           cellId,
         });
         break;
@@ -1446,7 +1449,7 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
 
         this.apps[cellId] = new CompactRollTableDisplay({
           document: relevantDocument,
-          id: `gmscreen-rolltable-${relevantDocument.id}`,
+          id: `gmscreen-rolltable-${relevantDocument.id}-${cellKey}`,
           cellId,
         });
         break;
@@ -1460,7 +1463,9 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
         const ActorDocumentSheet: foundry.applications.sheets.ActorSheetV2 & CustomOptions =
           new (SheetClass as ActorV2Constructor)({
             ...sheet.options,
-            id: dndNpcStatBlock ? `gmscreen-npc-${sheet.document.id}` : `gmscreen-actor-${sheet.document.id}`,
+            id: dndNpcStatBlock
+              ? `gmscreen-npc-${sheet.document.id}-${cellKey}`
+              : `gmscreen-actor-${sheet.document.id}-${cellKey}`,
             classes: [],
             document: relevantDocument,
             window: {
@@ -1529,7 +1534,7 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
         const ItemDocumentSheet: foundry.applications.sheets.ItemSheetV2 & CustomOptions =
           new (SheetClass as ItemV2Constructor)({
             ...sheet.options,
-            id: `gmscreen-item-${sheet.document.id}`,
+            id: `gmscreen-item-${sheet.document.id}-${cellKey}`,
             document: relevantDocument,
             window: {
               ...sheet.options.window,

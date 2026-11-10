@@ -151,9 +151,10 @@ export class CompactJournalEntryDisplay extends foundry.applications.sheets.jour
 
   /** @override */
   get id() {
+    const cellKey = this.cellId?.replace('#', '') ?? '';
     return this.lockedPageId
-      ? `gmscreen-journal-${this.document.id}-page-${this.lockedPageId}`
-      : `gmscreen-journal-${this.document.id}`;
+      ? `gmscreen-journal-${this.document.id}-page-${this.lockedPageId}-${cellKey}`
+      : `gmscreen-journal-${this.document.id}-${cellKey}`;
   }
 
   async close(...args) {

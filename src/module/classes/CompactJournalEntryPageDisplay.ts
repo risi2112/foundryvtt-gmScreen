@@ -65,7 +65,7 @@ export class CompactJournalEntryPageDisplay
 
   /** @override */
   get id() {
-    return `gmscreen-journal-page-${this.document.id}`;
+    return `gmscreen-journal-page-${this.document.id}-${this.cellId?.replace('#', '') ?? ''}`;
   }
 
   async close(...args) {

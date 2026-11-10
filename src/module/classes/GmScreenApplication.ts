@@ -1604,9 +1604,7 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
               const gridId = container instanceof HTMLElement ? container.dataset.tab : undefined;
               const viewMode = this.getJournalViewMode(gridId);
               // only push the mode when it changed so a quick toggle in the cell isn't undone by every refresh
-              if (viewMode !== application.appliedViewMode) {
-                application.appliedViewMode = viewMode;
-                application.render({ force: true, mode: CompactJournalEntryDisplay.toFoundryViewMode(viewMode) });
+              if (application.renderWithViewMode(viewMode)) {
                 return;
               }
             }

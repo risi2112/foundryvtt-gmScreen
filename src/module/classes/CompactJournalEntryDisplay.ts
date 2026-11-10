@@ -19,6 +19,19 @@ export class CompactJournalEntryDisplay extends foundry.applications.sheets.jour
     return undefined;
   }
 
+  /**
+   * Renders with the given view mode if it differs from the one last applied.
+   * Returns false (and does nothing) when the mode is unchanged.
+   */
+  renderWithViewMode(mode?: JournalViewMode) {
+    if (mode === this.appliedViewMode) {
+      return false;
+    }
+    this.appliedViewMode = mode;
+    this.render({ force: true, mode: CompactJournalEntryDisplay.toFoundryViewMode(mode) });
+    return true;
+  }
+
   constructor(options) {
     super(options);
     this.cellId = options.cellId;

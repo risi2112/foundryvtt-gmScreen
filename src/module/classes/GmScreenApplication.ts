@@ -888,11 +888,18 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
     if (!this.displayDrawer || !(this.element instanceof HTMLElement)) {
       return;
     }
+    // measure the toolbar's visible buttons, not its container, which can be much wider than what you see
     const toolbar = document.getElementById('scene-controls');
-    const toolbarRect = toolbar?.getBoundingClientRect();
+    const buttonsRight = Array.from(toolbar?.querySelectorAll('button, a, li') ?? []).reduce((right, el) => {
+      const rect = el.getBoundingClientRect();
+      const style = getComputedStyle(el);
+      if (rect.width === 0 || rect.height === 0 || style.visibility === 'hidden' || Number(style.opacity) === 0) {
+        return right;
+      }
+      return Math.max(right, rect.right);
+    }, 0);
     const drawerLeft = this.element.getBoundingClientRect().left;
-    const offset =
-      toolbarRect && toolbarRect.width > 0 ? Math.max(0, Math.round(toolbarRect.right - drawerLeft + 6)) : 0;
+    const offset = buttonsRight > 0 ? Math.max(0, Math.round(buttonsRight - drawerLeft + 6)) : 0;
     this.element.style.setProperty('--gm-screen-tabs-left-offset', `${offset}px`);
   }
 

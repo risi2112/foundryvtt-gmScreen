@@ -522,6 +522,24 @@ $transition-timing: 400ms;
       margin-right: auto;
     }
 
+    // compact page titles: the cell's title bar already names the journal, so the big page heading can shrink
+    .journal-page-header,
+    .journal-entry-page > header {
+      margin: 0 0 0.4em;
+      padding: 0.2em 0 0.25em;
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-size: 1.35em;
+        line-height: 1.2;
+        margin: 0;
+        padding: 0;
+        border: none;
+      }
+    }
+
     // single page view: drop the journal's sidebar entirely so the page gets the whole cell
     &.gm-journal-single-page {
       [data-application-part='sidebar'],

@@ -499,6 +499,24 @@ $transition-timing: 400ms;
       display: none !important;
     }
 
+    // let journal pages use the full width of the cell instead of Foundry's reading-width cap
+    .journal-entry-pages,
+    .journal-entry-page,
+    .journal-page-content,
+    section.journal-entry-page {
+      max-width: none !important;
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    // anything inside a page that still has its own fixed width sits in the middle instead of hugging the left
+    .journal-page-content > *,
+    section.journal-entry-page > * {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     // single page view: drop the journal's sidebar entirely so the page gets the whole cell
     &.gm-journal-single-page {
       [data-application-part='sidebar'],

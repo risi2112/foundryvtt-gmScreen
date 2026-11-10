@@ -8,6 +8,33 @@ $transition-timing: 400ms;
 @mixin gm-tab-strip {
   /* ---- Tab strip: scrolls (or wraps) instead of running off the screen ---- */
 
+  /* Rows of tabs: back row on top, front row touching the screen, like a filing cabinet */
+  .gm-screen-tabs-rows {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    flex: 0 1 auto;
+    min-width: 0;
+
+    > .gm-screen-tabs-scroller {
+      max-width: 100%;
+    }
+
+    > .tab-row-middle {
+      padding-left: 14px;
+    }
+
+    > .tab-row-back {
+      padding-left: 28px;
+    }
+
+    // rows behind the front one sit back a little until you reach for them
+    > .gm-screen-tabs-scroller:not(.tab-row-front) .gm-screen-tabs > button:not(.active):not(:hover) {
+      opacity: 0.85;
+    }
+  }
+
   .gm-screen-tabs-scroller {
     display: flex;
     align-items: flex-end;
@@ -444,6 +471,11 @@ $transition-timing: 400ms;
 
     .journal-entry-content {
       flex: 1 1 0;
+    }
+
+    // the page view is chosen per tab in Tabs Config, so hide Foundry's own single/all pages toggle
+    [data-action='toggleMode'] {
+      display: none !important;
     }
 
     // last resort: if something really can't shrink (a huge image or a fixed-width table), scroll instead of hiding it

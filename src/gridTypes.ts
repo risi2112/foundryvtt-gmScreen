@@ -13,6 +13,7 @@ export interface GmScreenGrid {
   cssClass: string; // used for styling the grid container
   tabColor?: string; // key of TAB_COLORS, empty for no colour
   journalViewMode?: 'single' | 'multiple' | ''; // empty means use the client default setting
+  tabRow?: 'front' | 'middle' | 'back' | ''; // which row of tabs this tab sits in (drawer only), empty = front
 }
 
 export interface GmScreenGridEntry {

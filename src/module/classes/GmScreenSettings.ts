@@ -235,7 +235,7 @@ export class GmScreenSettings extends foundry.applications.api.HandlebarsApplica
     id: 'gm-screen-tabs-config',
     classes: ['gm-screen-config'],
     height: 'auto',
-    width: 820,
+    width: 920,
     tag: 'form',
     form: {
       handler: GmScreenSettings.#onSubmit,
@@ -272,6 +272,14 @@ export class GmScreenSettings extends foundry.applications.api.HandlebarsApplica
     };
   }
 
+  static get tabRowChoices() {
+    return {
+      front: `${MODULE_ABBREV}.tabRows.front`,
+      middle: `${MODULE_ABBREV}.tabRows.middle`,
+      back: `${MODULE_ABBREV}.tabRows.back`,
+    };
+  }
+
   /** Values shared by the table and every row template, including rows added later */
   get rowTemplateData() {
     return {
@@ -280,6 +288,7 @@ export class GmScreenSettings extends foundry.applications.api.HandlebarsApplica
       tabColorChoices: GmScreenSettings.tabColorChoices,
       tabColors: TAB_COLORS,
       journalViewChoices: GmScreenSettings.journalViewChoices,
+      tabRowChoices: GmScreenSettings.tabRowChoices,
     };
   }
 
@@ -369,6 +378,7 @@ export class GmScreenSettings extends foundry.applications.api.HandlebarsApplica
         rowOverride: '',
         tabColor: '',
         journalViewMode: '',
+        tabRow: 'front',
       },
       ...this.rowTemplateData,
     };

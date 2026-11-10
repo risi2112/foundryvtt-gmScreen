@@ -123,7 +123,7 @@ $transition-timing: 400ms;
         color-mix(in srgb, var(--gm-tab-color) 22%, transparent),
         color-mix(in srgb, var(--gm-tab-color) 22%, transparent)
       ),
-      var(--gm-screen-background, var(--color-cool-5-90));
+      var(--gm-screen-background, rgb(11, 10, 19));
     border-top: 3px solid color-mix(in srgb, var(--gm-tab-color) 80%, transparent);
 
     &.active {
@@ -132,7 +132,7 @@ $transition-timing: 400ms;
           color-mix(in srgb, var(--gm-tab-color) 42%, transparent),
           color-mix(in srgb, var(--gm-tab-color) 42%, transparent)
         ),
-        var(--gm-screen-background, var(--color-cool-5-90));
+        var(--gm-screen-background, rgb(11, 10, 19));
       border-top-color: var(--gm-tab-color);
     }
 
@@ -151,7 +151,9 @@ $transition-timing: 400ms;
 .gm-screen-app {
   position: relative;
 
-  --gm-screen-background: var(--color-cool-5-90);
+  // solid, so tabs stay readable over a busy map
+  --gm-screen-background: var(--color-cool-5, rgb(11, 10, 19));
+  --gm-screen-tab-shadow: 0 -1px 6px rgba(0, 0, 0, 0.45);
   --gm-screen-button-text-color: var(--color-light-3);
   --gm-screen-button-border-color: var(--color-light-5);
   --gm-window-background: var(--color-cool-5-90);
@@ -208,6 +210,8 @@ $transition-timing: 400ms;
       bottom: calc(100% - 1px);
       right: 0;
       z-index: -1;
+      // keeps the tabs clear of Foundry's left toolbar; measured in GmScreenApplication
+      padding-left: calc(#{variables.$space} + var(--gm-screen-tabs-left-offset, 0px));
 
       > *:not(.gm-screen-button) {
         transform: translateY(100%);
@@ -256,13 +260,14 @@ $transition-timing: 400ms;
       background: var(--gm-screen-background);
       border: 1px solid var(--gm-screen-button-border-color);
       color: var(--gm-screen-button-text-color);
+      box-shadow: var(--gm-screen-tab-shadow);
 
       &:focus {
-        box-shadow: none;
+        box-shadow: var(--gm-screen-tab-shadow);
       }
 
       &:hover {
-        box-shadow: none;
+        box-shadow: var(--gm-screen-tab-shadow);
         text-shadow: 0 0 10px red;
       }
     }

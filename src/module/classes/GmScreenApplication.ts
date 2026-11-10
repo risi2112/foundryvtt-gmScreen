@@ -107,6 +107,8 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
 
   tabStripResizeObserver: ResizeObserver | undefined;
 
+  leftToolbarObserver: ResizeObserver | undefined;
+
   constructor(options = {}) {
     super(options);
     this.expanded = false;
@@ -878,6 +880,39 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
     });
   }
 
+  /**
+   * Drawer only: start the tab shelves just right of Foundry's left toolbar so the two never overlap.
+   * The screen itself keeps its full width.
+   */
+  updateTabsLeftOffset() {
+    if (!this.displayDrawer || !(this.element instanceof HTMLElement)) {
+      return;
+    }
+    const toolbar = document.getElementById('scene-controls');
+    const toolbarRect = toolbar?.getBoundingClientRect();
+    const drawerLeft = this.element.getBoundingClientRect().left;
+    const offset =
+      toolbarRect && toolbarRect.width > 0 ? Math.max(0, Math.round(toolbarRect.right - drawerLeft + 6)) : 0;
+    this.element.style.setProperty('--gm-screen-tabs-left-offset', `${offset}px`);
+  }
+
+  watchLeftToolbar() {
+    if (!this.displayDrawer) {
+      return;
+    }
+    this.updateTabsLeftOffset();
+
+    if (!this.leftToolbarObserver) {
+      this.leftToolbarObserver = new ResizeObserver(() => this.updateTabsLeftOffset());
+      window.addEventListener('resize', () => this.updateTabsLeftOffset());
+    }
+    const toolbar = document.getElementById('scene-controls');
+    this.leftToolbarObserver.disconnect();
+    if (toolbar) {
+      this.leftToolbarObserver.observe(toolbar);
+    }
+  }
+
   updateClassesAndFixButtons() {
     if (this.displayDrawer) {
       return;
@@ -1127,6 +1162,7 @@ export class GmScreenApplication extends foundry.applications.api.HandlebarsAppl
     dragDropTabs.bind(this.element);
 
     this.addListeners();
+    this.watchLeftToolbar();
     this.bindTabStrip();
 
     if (this.displayDrawer) {

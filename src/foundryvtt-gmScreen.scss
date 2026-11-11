@@ -169,8 +169,9 @@ $transition-timing: 400ms;
   }
 
   &.gm-screen-drawer {
+    // the 10px leaves a little breathing room between the screen and the left edge of the window
     width: calc(
-      var(--gm-screen-width) / 100 * (100vw - var(--gm-screen-right-offset) - var(--gm-screen-ui-right-width))
+      var(--gm-screen-width) / 100 * (100vw - var(--gm-screen-right-offset) - var(--gm-screen-ui-right-width) - 10px)
     );
     height: var(--gm-screen-height);
     top: 100%;
@@ -522,22 +523,19 @@ $transition-timing: 400ms;
       margin-right: auto;
     }
 
-    // compact page titles: the cell's title bar already names the journal, so the big page heading can shrink
-    .journal-page-header,
-    .journal-entry-page > header {
-      margin: 0 0 0.4em;
-      padding: 0.2em 0 0.25em;
+    // the cell's title bar already names the journal, so drop the journal's own big title and the gaps around it
+    .journal-header {
+      display: none !important;
+    }
 
-      h1,
-      h2,
-      h3,
-      h4 {
-        font-size: 1.35em;
-        line-height: 1.2;
-        margin: 0;
-        padding: 0;
-        border: none;
-      }
+    .journal-entry-content {
+      padding-top: 4px !important;
+      gap: 0 !important;
+    }
+
+    // no extra space above the first heading or paragraph of a page
+    .journal-page-content > :is(h1, h2, h3, h4, h5, h6, p, div, table, section):not(.edit-container):first-of-type {
+      margin-top: 0 !important;
     }
 
     // single page view: drop the journal's sidebar entirely so the page gets the whole cell
